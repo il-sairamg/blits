@@ -15,9 +15,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import Component from './component.js'
-import { default as Focus, keyUpCallbacks } from './focus.js'
+import { default as Component, componentMap } from './component.js'
+import { default as Focus, keyUpCallbacks } from './focus/focus.js'
+import Hover from './focus/hover.js'
+
 import Settings from './settings.js'
+import { renderer } from './launch.js'
 
 import symbols from './lib/symbols.js'
 import { DEFAULT_HOLD_TIMEOUT_MS, DEFAULT_KEYMAP } from './constants.js'
@@ -34,6 +37,8 @@ const Application = (config) => {
 
   let keyDownHandler
   let keyUpHandler
+  let mouseMoveHandler
+  let mouseClickHandler
   let holdTimeout
   let lastInputTime = 0
   let lastInputKey = null
@@ -41,6 +46,8 @@ const Application = (config) => {
   config.hooks[symbols.destroy] = function () {
     document.removeEventListener('keydown', keyDownHandler)
     document.removeEventListener('keyup', keyUpHandler)
+    document.removeEventListener('mousemove', mouseMoveHandler)
+    document.removeEventListener('click', mouseClickHandler)
   }
 
   config.hooks[symbols.init] = function () {
@@ -108,8 +115,42 @@ const Application = (config) => {
       Focus.hold = false
     }
 
+    let lastMoved = 0
+    let currentNode = undefined
+    let currentComponent = undefined
+    // limit the amount of move events per time frame (@todo make the ms configurable)
+    mouseMoveHandler = (e) => {
+      if (e.timeStamp - lastMoved < 100) return
+      lastMoved = e.timeStamp
+
+      const node = renderer.stage.getNodeFromPosition({ x: e.clientX, y: e.clientY })
+
+      if (node === null) return
+      if (node === currentNode) return
+
+      currentNode = node
+
+      currentComponent = componentMap.get(currentNode)
+
+      Hover.set(currentComponent)
+    }
+
+    mouseClickHandler = () => {
+      const e = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        code: 'Enter',
+        keyCode: 13,
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      })
+      currentComponent.$focus(e)
+    }
+
     document.addEventListener('keydown', keyDownHandler)
     document.addEventListener('keyup', keyUpHandler)
+    document.addEventListener('mousemove', mouseMoveHandler)
+    document.addEventListener('click', mouseClickHandler)
 
     // next tick
     setTimeout(() => Focus.set(this))
