@@ -85,7 +85,7 @@ const addToQueue = (message, politeness, delay = false, options = {}) => {
     if (id === currentId) {
       speechSynthesis.cancel()
       isProcessing = false
-      resolveFn('interupted')
+      resolveFn('interrupted')
     }
   }
 
