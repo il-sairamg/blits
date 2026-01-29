@@ -17,6 +17,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import compiler from '../src/lib/precompiler/precompiler.js'
 import { exec } from 'child_process'
 
@@ -55,7 +56,10 @@ function processFile(filePath) {
   fs.copyFileSync(filePath, backupFilePath)
 
   const source = fs.readFileSync(filePath, 'utf-8')
-  const newSource = compiler(source, filePath)
+  const result = compiler(source, filePath)
+
+  // Handle both string and object return types
+  const newSource = typeof result === 'object' && result.code ? result.code : result
   fs.writeFileSync(filePath, newSource)
 
   // only format the file if it was changed
@@ -81,4 +85,9 @@ function formatFileWithESLint(filePath) {
   })
 }
 
-precompileComponents()
+// Only run if this file is executed directly (not imported)
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  precompileComponents()
+}
+
+export { precompileComponents, processDirectory, processFile, formatFileWithESLint }

@@ -15,33 +15,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import symbols from '../../lib/symbols.js'
-import { to, currentRoute, back, state } from '../../router/router.js'
-
-export default {
-  $router: {
-    value: {
-      to,
-      back,
-      get backNavigation() {
-        return state.backNavigation !== false
-      },
-      set backNavigation(enabled) {
-        state.backNavigation = enabled !== false
-      },
-      get currentRoute() {
-        return currentRoute
-      },
-      get routes() {
-        return this[symbols.routes]
-      },
-      get navigating() {
-        return state.navigating
-      },
-      state,
-    },
-    writable: false,
-    enumerable: true,
-    configurable: false,
-  },
+export interface StoragePlugin {
+  get<T = unknown>(key: string): T | null
+  set(key: string, value: unknown): boolean
+  remove(key: string): void
+  clear(): void
 }
+
+declare const storage: {
+  readonly name: 'storage'
+  plugin: () => StoragePlugin
+}
+
+export default storage
+

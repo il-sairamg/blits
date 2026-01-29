@@ -18,6 +18,9 @@
 import { Log } from './log.js'
 import { emit, privateEmit } from './hooks.js'
 import symbols from './symbols.js'
+import Settings from '../settings.js'
+
+let inspectorEnabled = null
 
 /**
  * List of valid lifecycle states for a component.
@@ -86,6 +89,31 @@ export default {
       // update the built-in hasFocus state variable
       if (v === 'focus') this.component[symbols.state].hasFocus = true
       if (v === 'unfocus') this.component[symbols.state].hasFocus = false
+      if (v === 'focus' || v === 'unfocus') {
+        if (inspectorEnabled === null) {
+          inspectorEnabled = Settings.get('inspector', false)
+        }
+      }
+      if (v === 'focus') {
+        this.component[symbols.state].hasFocus = true
+        if (
+          inspectorEnabled === true &&
+          this.component[symbols.holder] &&
+          typeof this.component[symbols.holder].setInspectorMetadata === 'function'
+        ) {
+          this.component[symbols.holder].setInspectorMetadata({ $hasFocus: true })
+        }
+      }
+      if (v === 'unfocus') {
+        this.component[symbols.state].hasFocus = false
+        if (
+          inspectorEnabled === true &&
+          this.component[symbols.holder] &&
+          typeof this.component[symbols.holder].setInspectorMetadata === 'function'
+        ) {
+          this.component[symbols.holder].setInspectorMetadata({ $hasFocus: false })
+        }
+      }
       // update the built-in isHovered state variable
       if (v === 'hover') this.component[symbols.state].isHovered = true
       if (v === 'unhover') this.component[symbols.state].isHovered = false

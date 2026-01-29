@@ -15,33 +15,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import symbols from '../../lib/symbols.js'
-import { to, currentRoute, back, state } from '../../router/router.js'
+export { default as language } from './language.js'
+export { default as theme } from './theme.js'
+export { default as appState } from './appstate.js'
+export { default as storage } from './storage/storage.js'
 
-export default {
-  $router: {
-    value: {
-      to,
-      back,
-      get backNavigation() {
-        return state.backNavigation !== false
-      },
-      set backNavigation(enabled) {
-        state.backNavigation = enabled !== false
-      },
-      get currentRoute() {
-        return currentRoute
-      },
-      get routes() {
-        return this[symbols.routes]
-      },
-      get navigating() {
-        return state.navigating
-      },
-      state,
-    },
-    writable: false,
-    enumerable: true,
-    configurable: false,
-  },
-}
+// Re-export plugin interfaces for convenience
+export type { LanguagePlugin, LanguagePluginOptions } from './language.js'
+export type { ThemePlugin, ThemePluginConfig } from './theme.js'
+export type { StoragePlugin } from './storage/storage.js'
+export type { AppStatePlugin } from './appstate.js'
+
