@@ -144,7 +144,8 @@ const Application = (config) => {
         cancelable: true,
         composed: true,
       })
-      currentComponent.$focus(e)
+      currentComponent.$focus()
+      currentComponent.$input(e)
     }
 
     document.addEventListener('keydown', keyDownHandler)
