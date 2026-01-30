@@ -123,6 +123,8 @@ const Application = (config) => {
       if (e.timeStamp - lastMoved < 100) return
       lastMoved = e.timeStamp
 
+      this.$emit('mouse::move', e)
+
       const node = renderer.stage.getNodeFromPosition({ x: e.clientX, y: e.clientY })
 
       if (node === null) return
