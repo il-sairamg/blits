@@ -19,7 +19,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import compiler from '../src/lib/precompiler/precompiler.js'
-import { exec } from 'child_process'
+import childProcess from 'child_process'
 
 const currentDir = process.cwd()
 const componentDirs = ['src/components']
@@ -71,7 +71,7 @@ function processFile(filePath) {
 function formatFileWithESLint(filePath) {
   const command = `eslint "${filePath}" --fix`
 
-  exec(command, (error, stdout, stderr) => {
+  childProcess.exec(command, (error, stdout, stderr) => {
     if (error) {
       console.error(`Execution Error: ${error.message}`)
       console.error(`Exit Code: ${error.code}`)
