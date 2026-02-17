@@ -18,7 +18,7 @@ export const copyLightningFixtures = (config) => {
     }
 
     const projectType = config.projectType
-    const formatType = config.formatType
+    const formatType = 'plain' // formatType is currently not used, defaulting to 'plain' for now
 
     const boilerplate = 'default'
     const boilerplateDir = path.join(config.fixturesBase, boilerplate)
