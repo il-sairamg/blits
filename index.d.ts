@@ -1260,6 +1260,10 @@ declare module '@lightningjs/blits' {
      */
     announcerOptions?: AnnouncerUtteranceOptions,
     /**
+     * Enable mouse (hover and click-to-focus). Defaults to false.
+     */
+    enableMouse?: boolean,
+    /**
      * Maximum FPS at which the App will be rendered
      *
      * Lowering the maximum FPS value can improve the overall experience on lower end devices.

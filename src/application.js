@@ -20,8 +20,6 @@ import { default as Focus, keyUpCallbacks } from './focus/focus.js'
 import Hover from './focus/hover.js'
 
 import Settings from './settings.js'
-import { renderer } from './launch.js'
-
 import symbols from './lib/symbols.js'
 import { DEFAULT_HOLD_TIMEOUT_MS, DEFAULT_KEYMAP } from './constants.js'
 import { renderer } from './launch.js'
@@ -44,12 +42,15 @@ const Application = (config) => {
   let holdTimeout
   let lastInputTime = 0
   let lastInputKey = null
+  let mouseListenersAdded = false
 
   config.hooks[symbols.destroy] = function () {
     document.removeEventListener('keydown', keyDownHandler)
     document.removeEventListener('keyup', keyUpHandler)
-    document.removeEventListener('mousemove', mouseMoveHandler)
-    document.removeEventListener('click', mouseClickHandler)
+    if (mouseListenersAdded) {
+      document.removeEventListener('mousemove', mouseMoveHandler)
+      document.removeEventListener('click', mouseClickHandler)
+    }
     window.removeEventListener('resize', updateCanvasRect)
     window.removeEventListener('scroll', updateCanvasRect)
   }
@@ -67,6 +68,8 @@ const Application = (config) => {
 
     /** @type {number} Input throttle time in milliseconds (0 = disabled) */
     const throttleMs = Settings.get('inputThrottle', 0)
+
+    const mouseEnabled = Settings.get('enableMouse', false)
 
     keyDownHandler = async (e) => {
       const currentTime = performance.now()
@@ -187,8 +190,11 @@ const Application = (config) => {
 
     document.addEventListener('keydown', keyDownHandler)
     document.addEventListener('keyup', keyUpHandler)
-    document.addEventListener('mousemove', mouseMoveHandler)
-    document.addEventListener('click', mouseClickHandler)
+    if (mouseEnabled) {
+      document.addEventListener('mousemove', mouseMoveHandler)
+      document.addEventListener('click', mouseClickHandler)
+      mouseListenersAdded = true
+    }
     window.addEventListener('resize', updateCanvasRect)
     window.addEventListener('scroll', updateCanvasRect)
 
