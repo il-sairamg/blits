@@ -1260,7 +1260,13 @@ declare module '@lightningjs/blits' {
      */
     announcerOptions?: AnnouncerUtteranceOptions,
     /**
-     * Enable mouse (hover and click-to-focus). Defaults to false.
+     * Enable mouse support (hover and click-to-focus).
+     *
+     * When set to `true`, pointer movement over the canvas updates hover state on components
+     * and click dispatches focus and Enter key input to the component under the cursor.
+     * When set to `false`, no mouse or pointer listeners are registered.
+     *
+     * @default false
      */
     enableMouse?: boolean,
     /**
