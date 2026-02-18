@@ -19,6 +19,7 @@ import test from 'tape'
 import sinon from 'sinon'
 import path from 'path'
 import fs from 'fs'
+import childProcess from 'child_process'
 
 // Import functions after setting up module structure
 let precompileComponents, processDirectory, processFile, formatFileWithESLint
@@ -238,6 +239,7 @@ test('processFile - should create backup with .orig.js extension', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -247,6 +249,7 @@ test('processFile - should create backup with .orig.js extension', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -257,6 +260,7 @@ test('processFile - should create backup with .orig.ts extension', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -266,6 +270,7 @@ test('processFile - should create backup with .orig.ts extension', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -276,6 +281,7 @@ test('processFile - should read and compile file', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -285,6 +291,7 @@ test('processFile - should read and compile file', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -294,6 +301,7 @@ test('processFile - should write compiled result', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -303,6 +311,7 @@ test('processFile - should write compiled result', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -312,6 +321,7 @@ test('processFile - should handle compiler returning object with code property',
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -321,6 +331,7 @@ test('processFile - should handle compiler returning object with code property',
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -330,6 +341,7 @@ test('processFile - should format file when source changes', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -340,6 +352,7 @@ test('processFile - should format file when source changes', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -350,6 +363,7 @@ test('processFile - should NOT format file when source unchanged', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -359,6 +373,7 @@ test('processFile - should NOT format file when source unchanged', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
@@ -368,6 +383,7 @@ test('processFile - should log precompiling message', (assert) => {
   const writeStub = sinon.stub(fs, 'writeFileSync')
   const copyStub = sinon.stub(fs, 'copyFileSync')
   const consoleLogStub = sinon.stub(console, 'log')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   processFile(filePath)
 
@@ -380,48 +396,58 @@ test('processFile - should log precompiling message', (assert) => {
   writeStub.restore()
   copyStub.restore()
   consoleLogStub.restore()
+  execStub.restore()
   assert.end()
 })
 
 test('formatFileWithESLint - should accept file path', (assert) => {
   const filePath = path.resolve(process.cwd(), 'Component.js')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   // Just verify the function can be called without errors
   assert.doesNotThrow(() => {
     formatFileWithESLint(filePath)
   }, 'Should accept file path without throwing')
 
+  assert.ok(execStub.calledOnce, 'Should call exec once')
+  execStub.restore()
   assert.end()
 })
 
 test('formatFileWithESLint - should handle file path parameter', (assert) => {
   const filePath = path.resolve(process.cwd(), 'Component.js')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   // Verify function accepts path parameter
   assert.doesNotThrow(() => {
     formatFileWithESLint(filePath)
   }, 'Should handle file path parameter')
 
+  execStub.restore()
   assert.end()
 })
 
 test('formatFileWithESLint - should be callable', (assert) => {
   const filePath = path.resolve(process.cwd(), 'Component.js')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   // Verify function is callable
   assert.equal(typeof formatFileWithESLint, 'function', 'Should be a function')
   formatFileWithESLint(filePath)
 
+  execStub.restore()
   assert.end()
 })
 
 test('formatFileWithESLint - should execute without errors', (assert) => {
   const filePath = path.resolve(process.cwd(), 'Component.js')
+  const execStub = sinon.stub(childProcess, 'exec')
 
   // Verify function executes without throwing
   assert.doesNotThrow(() => {
     formatFileWithESLint(filePath)
   }, 'Should execute without errors')
 
+  execStub.restore()
   assert.end()
 })
