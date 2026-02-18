@@ -50,9 +50,9 @@ const Application = (config) => {
     if (mouseListenersAdded) {
       document.removeEventListener('mousemove', mouseMoveHandler)
       document.removeEventListener('click', mouseClickHandler)
+      window.removeEventListener('resize', updateCanvasRect)
+      window.removeEventListener('scroll', updateCanvasRect)
     }
-    window.removeEventListener('resize', updateCanvasRect)
-    window.removeEventListener('scroll', updateCanvasRect)
   }
 
   config.hooks[symbols.init] = function () {
@@ -132,7 +132,6 @@ const Application = (config) => {
         canvasRect = renderer.canvas.getBoundingClientRect()
       }
     }
-    updateCanvasRect()
 
     // limit the amount of move events per time frame
     mouseMoveHandler = (e) => {
@@ -191,12 +190,13 @@ const Application = (config) => {
     document.addEventListener('keydown', keyDownHandler)
     document.addEventListener('keyup', keyUpHandler)
     if (mouseEnabled) {
+      updateCanvasRect()
       document.addEventListener('mousemove', mouseMoveHandler)
       document.addEventListener('click', mouseClickHandler)
+      window.addEventListener('resize', updateCanvasRect)
+      window.addEventListener('scroll', updateCanvasRect)
       mouseListenersAdded = true
     }
-    window.addEventListener('resize', updateCanvasRect)
-    window.addEventListener('scroll', updateCanvasRect)
 
     // next tick
     setTimeout(() => Focus.set(this))
