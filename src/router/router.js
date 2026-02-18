@@ -494,6 +494,10 @@ export const navigate = async function () {
         }
       }
 
+      // Clear module-level variables after removeView has consumed them
+      overrideOptions = {}
+      navigationData = {}
+
       // apply in transition
       if (route.transition.in) {
         if (Array.isArray(route.transition.in)) {
@@ -569,11 +573,17 @@ const removeView = async (route, view, transition, navigatingBack) => {
     }
   }
 
+  // Resolve effective keepAlive: runtime override from $router.to() takes precedence
+  // over the static route config option
+  const keepAlive = overrideOptions.keepAlive !== undefined
+    ? overrideOptions.keepAlive
+    : (route.options && route.options.keepAlive)
+
   // cache the page when it's as 'keepAlive' instead of destroying
   if (
     navigatingBack === false &&
     route.options &&
-    route.options.keepAlive === true &&
+    keepAlive === true &&
     route.options.inHistory === true
   ) {
     const historyItem = history[history.length - 1]
@@ -588,7 +598,7 @@ const removeView = async (route, view, transition, navigatingBack) => {
    * 2. Navigating back, and the previous route is configured with "keep alive" set to true.
    * 3. Navigating back, and the previous route is not configured with "keep alive" set to true.
    */
-  if (route.options && (route.options.keepAlive !== true || navigatingBack === true)) {
+  if (route.options && (keepAlive !== true || navigatingBack === true)) {
     view.destroy()
     view = null
   }
