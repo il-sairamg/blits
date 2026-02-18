@@ -170,6 +170,8 @@ declare module '@lightningjs/blits' {
     * Fires when the Component is being destroyed and removed.
     */
     destroy?: () => void;
+    hover?: () => void;
+    unhover?: () => void;
     /**
     * Fires upon each frame start  (allowing you to tap directly into the renderloop)
     *
@@ -390,6 +392,13 @@ declare module '@lightningjs/blits' {
     * @returns Boolean
     */
     hasFocus: boolean,
+
+    /**
+    * Indicates whether the component currently is hovered
+    *
+    * @returns Boolean
+    */
+    isHovered: boolean,
 
     /**
     * Listen to events emitted by other components

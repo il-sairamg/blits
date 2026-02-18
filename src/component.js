@@ -43,6 +43,9 @@ const required = (name) => {
   throw new Error(`Parameter ${name} is required`)
 }
 
+// map that holds component to their holder node
+export const componentMap = new WeakMap()
+
 /**
  * @typedef {function} BlitsComponentFactory
  * @param {object} opts - The options for the component instance
@@ -216,6 +219,10 @@ const Component = (name = required('name'), config = required('config')) => {
     // such as rotation and scale to components)
     this[symbols.holder] = parentEl
 
+    if (parentEl !== undefined && parentEl.node !== undefined) {
+      componentMap.set(parentEl.node, this)
+    }
+
     // generate an internal id (simple counter)
     this[symbols.id] = createInternalId()
 
@@ -237,6 +244,9 @@ const Component = (name = required('name'), config = required('config')) => {
       (config.state && typeof config.state === 'function' && config.state.apply(this)) || {}
     // add hasFocus key in
     this[symbols.originalState]['hasFocus'] = false
+
+    // add isHovered key in
+    this[symbols.originalState]['isHovered'] = false
 
     // generate a reactive state (using the result of previously execute state function)
     // and store it
