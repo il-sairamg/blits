@@ -117,9 +117,6 @@ export default {
           this.component[symbols.holder].setInspectorMetadata({ 'blits-hasFocus': false })
         }
       }
-      // update the built-in isHovered state variable
-      if (v === 'hover') this.component[symbols.state].isHovered = true
-      if (v === 'unhover') this.component[symbols.state].isHovered = false
     }
   },
 }
