@@ -52,6 +52,7 @@ const Application = (config) => {
       document.removeEventListener('click', mouseClickHandler)
       window.removeEventListener('resize', updateCanvasRect)
       window.removeEventListener('scroll', updateCanvasRect)
+      Hover.clear()
     }
   }
 
@@ -103,6 +104,7 @@ const Application = (config) => {
       }
 
       Focus.input(key, e)
+      if (mouseEnabled) Hover.clear()
       clearTimeout(holdTimeout)
       holdTimeout = setTimeout(
         () => {

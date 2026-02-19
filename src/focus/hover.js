@@ -77,6 +77,16 @@ export default {
     //   this.hold === true ? Settings.get('holdTimeout', DEFAULT_HOLD_TIMEOUT_MS) : 0
     // )
   },
+  clear() {
+    if (hoveredComponent === null) return
+    for (let i = 0; i < hoverChain.length; i++) {
+      if (hoverChain[i].lifecycle?.state !== undefined) {
+        hoverChain[i].lifecycle.state = 'unhover'
+      }
+    }
+    hoveredComponent = null
+    hoverChain = []
+  },
 }
 
 /**
