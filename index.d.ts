@@ -201,11 +201,14 @@ declare module '@lightningjs/blits' {
     */
     exit?: () => void;
     /**
-    * Fires when the renderer is done rendering and enters an idle state
+    * Fires when the renderer is done rendering and enters an idle state (idle = true)
+    * and when the renderer starts rendering again and leaves the idle state (idle = false)
+    *
+    * @param idle - boolean to indicate whether the renderer is in idle state or not
     *
     * Note: This event can fire multiple times
     */
-    idle?: () => void;
+    idle?: (idle: boolean) => void;
     /**
     * Fires at a predefined interval and reports the current FPS value
     *
