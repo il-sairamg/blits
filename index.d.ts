@@ -666,9 +666,9 @@ declare module '@lightningjs/blits' {
 
   export interface RouterHooks {
     init?: () => Promise<void> | void;
-    beforeEach?: (to: Route, from: Route) => string | Route | Promise<string | Route> | void;
-    afterEach?: (to: Route, from: Route) => string | Route | Promise<string | Route> | void;
-    error?: (err: string) => string | Route | Promise<string | Route> | void;
+    beforeEach?: (to: Route, from: Route) => string | Route | void | boolean | Promise<string | Route | void | boolean>;
+    afterEach?: (to: Route, from: Route) => string | Route | void | boolean | Promise<string | Route | void | boolean>;
+    error?: (err: string) => string | Route | void | boolean | Promise<string | Route | void | boolean>;
   }
 
   export interface RouterConfig<P extends Props, S, M, C> {
@@ -694,13 +694,13 @@ declare module '@lightningjs/blits' {
 
     /**
      * Enable or disable RouterView history navigation on Back input
-     * 
+     *
      * @default true
-     * 
+     *
      * @remarks
      * This is an app-wide setting that affects all RouterView instances in your application.
      * The router state is global and shared across all router instances.
-     * 
+     *
      * @example
      * ```js
      * router: {
@@ -809,8 +809,8 @@ declare module '@lightningjs/blits' {
   }[keyof T]
 
   export interface RouteHooks {
-    before?: (to: Route, from: Route) => string | Route | Promise<string | Route>;
-    after?: (to: Route, from: Route) => string | Route | Promise<string | Route>;
+    before?: (to: Route, from: Route) => string | Route | void | boolean | Promise<string | Route | void | boolean>;
+    after?: (to: Route, from: Route) => string | Route | void | boolean | Promise<string | Route | void | boolean>;
   }
 
   export type Route = {
