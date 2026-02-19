@@ -268,6 +268,10 @@ const Component = (name = required('name'), config = required('config')) => {
 
     this[symbols.rendererEventListeners] = []
 
+    if (this[symbols.holder] !== undefined && Settings.get('inspector', false)) {
+      this[symbols.holder].setInspectorMetadata({ 'blits-hasFocus': false })
+    }
+
     // setup inspector data for render state
     if (name === 'App' && Settings.get('inspector', false)) {
       setTimeout(() => {
