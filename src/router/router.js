@@ -216,12 +216,17 @@ const defaultOptions = {
 }
 
 const makeRouteObject = (route, overrides) => {
+  // FIX: exclude keepAlive from the destination route options. Unlike other
+  // overrides, keepAlive applies to the route being LEFT, not the destination.
+  // It is consumed by removeView() instead.
+  const { keepAlive: _keepAlive, ...destOverrides } = overrideOptions // eslint-disable-line no-unused-vars
+
   const cleanRoute = {
     hash: overrides.hash,
     path: route.path,
     component: route.component,
     transition: 'transition' in route ? route.transition : fadeInFadeOutTransition,
-    options: { ...defaultOptions, ...route.options, ...overrideOptions },
+    options: { ...defaultOptions, ...route.options, ...destOverrides },
     announce: route.announce || false,
     hooks: route.hooks || {},
     data: { ...route.data, ...navigationData, ...overrides.queryParams },
@@ -342,8 +347,12 @@ export const navigate = async function () {
 
       // add the previous route (technically still the current route at this point)
       // into the history stack when inHistory is true and we're not navigating back
+      //
+      // FIX: use truthy check instead of `!== undefined` because matchHash()
+      // can return `false`, which survives `!== undefined` but has no `.options`.
       if (
-        previousRoute !== undefined &&
+        previousRoute &&
+        previousRoute.options &&
         previousRoute.options.inHistory === true &&
         navigatingBack === false
       ) {
@@ -485,7 +494,8 @@ export const navigate = async function () {
 
       // apply out out transition on previous view if available, unless
       // we're reusing the prvious page component
-      if (previousRoute !== undefined && reuse === false) {
+      // FIX: truthy guard — previousRoute can be `false` (see history-push comment above).
+      if (previousRoute && reuse === false) {
         // only animate when there is a previous route
         shouldAnimate = true
         const oldView = this[symbols.children].splice(1, 1).pop()
@@ -575,9 +585,10 @@ const removeView = async (route, view, transition, navigatingBack) => {
 
   // Resolve effective keepAlive: runtime override from $router.to() takes precedence
   // over the static route config option
-  const keepAlive = overrideOptions.keepAlive !== undefined
-    ? overrideOptions.keepAlive
-    : (route.options && route.options.keepAlive)
+  const keepAlive =
+    overrideOptions.keepAlive !== undefined
+      ? overrideOptions.keepAlive
+      : route.options && route.options.keepAlive
 
   // cache the page when it's as 'keepAlive' instead of destroying
   if (
