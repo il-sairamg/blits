@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v1.49.0
+
+_20 feb 2026_
+
+- Added `data-blits-renderstate` inspector attribute
+- Fixed `data-blits-hasfocus` inspector attribute to always be available
+- Added boolean attribute to `idle` lifecycle hook to indicate `idle` or `active` state
+- Fixed type definitions for
+- Fixed double processiong of reactivity guard
+
 ## v1.48.0
 
 _10 feb 2026_
