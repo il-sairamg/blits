@@ -274,7 +274,7 @@ const Component = (name = required('name'), config = required('config')) => {
 
     // setup inspector data for render state
     if (name === 'App' && Settings.get('inspector', false)) {
-      setTimeout(() => {
+      this.$setTimeout(() => {
         const wrapperEl = this[symbols.wrapper]
         const idleCb = () => {
           wrapperEl.setInspectorMetadata({ 'blits-renderState': 'idle' })
@@ -292,7 +292,7 @@ const Component = (name = required('name'), config = required('config')) => {
     // register hooks if component has hooks specified
     if (config.hooks) {
       // push to next tick to ensure
-      setTimeout(() => {
+      this.$setTimeout(() => {
         // frame tick event
         if (config.hooks.frameTick) {
           const cb = (_r, data) => emit('frameTick', this[symbols.identifier], this, [data])
