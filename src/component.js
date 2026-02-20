@@ -284,8 +284,8 @@ const Component = (name = required('name'), config = required('config')) => {
         }
         renderer.on('idle', idleCb)
         renderer.on('active', activeCb)
-        this[symbols.rendererEventListeners].push({ event: 'idle', idleCb })
-        this[symbols.rendererEventListeners].push({ event: 'active', activeCb })
+        this[symbols.rendererEventListeners].push({ event: 'idle', cb: idleCb })
+        this[symbols.rendererEventListeners].push({ event: 'active', cb: activeCb })
       })
     }
 
@@ -310,8 +310,8 @@ const Component = (name = required('name'), config = required('config')) => {
           }
           renderer.on('idle', idleCb)
           renderer.on('active', activeCb)
-          this[symbols.rendererEventListeners].push({ event: 'idle', idleCb })
-          this[symbols.rendererEventListeners].push({ event: 'active', activeCb })
+          this[symbols.rendererEventListeners].push({ event: 'idle', cb: idleCb })
+          this[symbols.rendererEventListeners].push({ event: 'active', cb: activeCb })
         }
 
         // fpsUpdate event
