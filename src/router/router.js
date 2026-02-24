@@ -249,17 +249,17 @@ export const navigate = async function () {
   Announcer.clear()
   state.navigating = true
   let reuse = false
-  if (preventHashChangeNavigation === false && this.parent[symbols.routes]) {
+  if (preventHashChangeNavigation === false && this[symbols.parent][symbols.routes]) {
     let previousRoute = currentRoute //? Object.assign({}, currentRoute) : undefined
-    let route = matchHash(getHash(location.hash), this.parent[symbols.routes])
+    let route = matchHash(getHash(location.hash), this[symbols.parent][symbols.routes])
 
     currentRoute = route
 
     if (route) {
       const currentPath = currentRoute.path
       let beforeEachResult
-      if (this.parent[symbols.routerHooks]) {
-        const hooks = this.parent[symbols.routerHooks]
+      if (this[symbols.parent][symbols.routerHooks]) {
+        const hooks = this[symbols.parent][symbols.routerHooks]
         if (hooks.beforeEach) {
           try {
             beforeEachResult = await hooks.beforeEach.call(this.parent, route, previousRoute)
@@ -403,7 +403,7 @@ export const navigate = async function () {
       // Update router state after announcements and final route resolution,
       // right before initializing or restoring the view
       state.path = route.path
-      state.params = route.params || {}
+      state.params = Object.keys(route.params).length === 0 ? null : route.params
       state.hash = route.hash
       state.data = null
       state.data = route.data || {}
@@ -482,15 +482,13 @@ export const navigate = async function () {
       }
 
       let shouldAnimate = false
-      // Declare oldView in broader scope so it can be used in hooks below
-      let oldView = null
 
       // apply out out transition on previous view if available, unless
       // we're reusing the prvious page component
       if (previousRoute !== undefined && reuse === false) {
         // only animate when there is a previous route
         shouldAnimate = true
-        oldView = this[symbols.children].splice(1, 1).pop()
+        const oldView = this[symbols.children].splice(1, 1).pop()
         if (oldView) {
           await removeView(previousRoute, oldView, route.transition.out, navigatingBack)
         }
@@ -509,8 +507,8 @@ export const navigate = async function () {
         }
       }
 
-      if (this.parent[symbols.routerHooks]) {
-        const hooks = this.parent[symbols.routerHooks]
+      if (this[symbols.parent][symbols.routerHooks]) {
+        const hooks = this[symbols.parent][symbols.routerHooks]
         if (hooks.afterEach) {
           try {
             await hooks.afterEach.call(
@@ -537,9 +535,9 @@ export const navigate = async function () {
       }
     } else {
       Log.error(`Route ${route.hash} not found`)
-      const routerHooks = this.parent[symbols.routerHooks]
+      const routerHooks = this[symbols.parent][symbols.routerHooks]
       if (routerHooks && typeof routerHooks.error === 'function') {
-        routerHooks.error.call(this.parent, `Route ${route.hash} not found`)
+        routerHooks.error.call(this[symbols.parent], `Route ${route.hash} not found`)
       }
     }
   }
@@ -661,7 +659,7 @@ export const back = function () {
     }
     // Construct new path to backtrack to
     path = path.replace(hashEnd, '')
-    const route = matchHash(getHash(path), this.parent[symbols.routes])
+    const route = matchHash(getHash(path), this[symbols.parent][symbols.routes])
 
     if (route && backtrack) {
       to(route.path, route.data, route.options)

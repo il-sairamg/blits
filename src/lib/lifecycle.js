@@ -75,7 +75,7 @@ export default {
   set state(v) {
     if ((states.indexOf(v) > -1 && v !== this.current) || v === 'refocus') {
       Log.debug(
-        `Setting lifecycle state from ${this.current} to ${v} for ${this.component.componentId}`
+        `Setting lifecycle state from ${this.current} to ${v} for ${this.component.$componentId}`
       )
       this.previous = this.current
       this.current = v
@@ -84,30 +84,30 @@ export default {
       privateEmit(v, this.component[symbols.identifier], this.component)
       // emit 'public' hook
       emit(v, this.component[symbols.identifier], this.component)
-      // update the built-in hasFocus state variable
+      // update the built-in $hasFocus state variable
       if (v === 'focus' || v === 'unfocus') {
         if (inspectorEnabled === null) {
           inspectorEnabled = Settings.get('inspector', false)
         }
       }
       if (v === 'focus') {
-        this.component[symbols.state].hasFocus = true
+        this.component[symbols.state].$hasFocus = true
         if (
           inspectorEnabled === true &&
           this.component[symbols.holder] &&
           typeof this.component[symbols.holder].setInspectorMetadata === 'function'
         ) {
-          this.component[symbols.holder].setInspectorMetadata({ $hasFocus: true })
+          this.component[symbols.holder].setInspectorMetadata({ 'blits-hasFocus': true })
         }
       }
       if (v === 'unfocus') {
-        this.component[symbols.state].hasFocus = false
+        this.component[symbols.state].$hasFocus = false
         if (
           inspectorEnabled === true &&
           this.component[symbols.holder] &&
           typeof this.component[symbols.holder].setInspectorMetadata === 'function'
         ) {
-          this.component[symbols.holder].setInspectorMetadata({ $hasFocus: false })
+          this.component[symbols.holder].setInspectorMetadata({ 'blits-hasFocus': false })
         }
       }
     }

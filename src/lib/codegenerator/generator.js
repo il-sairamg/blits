@@ -18,10 +18,13 @@
 let counter
 let isDev
 
+import { elementAttributes } from '../../engines/L3/element.js'
+
 export default function (templateObject = { children: [] }, devMode = false) {
   const ctx = {
     renderCode: [
       'const elms = []',
+      `const validAttributes = ${JSON.stringify(elementAttributes)}`,
       'const elementConfigs = []',
       'const forloops = []',
       'const props = []',
@@ -81,7 +84,7 @@ export default function (templateObject = { children: [] }, devMode = false) {
       forloops.length = 0
       props.length = 0
       skips.length = 0
-    }}
+    }, skips}
   `)
 
   return {
@@ -97,7 +100,16 @@ export default function (templateObject = { children: [] }, devMode = false) {
     ),
     effects: ctx.effectsCode.map(
       (code) =>
-        new Function('component', 'elms', 'context', 'components', 'rootComponent', 'effect', code)
+        new Function(
+          'component',
+          'elms',
+          'context',
+          'components',
+          'rootComponent',
+          'skips',
+          'effect',
+          code
+        )
     ),
     context: ctx.context,
   }
@@ -224,13 +236,43 @@ const generateElementCode = function (
     }
   })
 
+  if (templateObject[Symbol.for('tagContent')] !== undefined) {
+    const val = templateObject[Symbol.for('tagContent')]
+
+    // Check if the string contains interpolation (`{{ }}`).
+    const regex = /\{\{\s*.+?\s*\}\}/
+    const containsInterpolation = regex.test(val)
+
+    if (containsInterpolation === false) {
+      // Inline text is treated as static content when interpolation is not defined.
+      renderCode.push(`elementConfigs[${counter}]['content'] = '${val}'`)
+    } else {
+      const output = parseTagContent(val, options.component)
+      renderCode.push(`elementConfigs[${counter}]['content'] = ${output}`)
+
+      const variableRegEx = /\{\{\s*(?=[^}]*\$).+?\s*\}\}/
+      // Check if the interpolation contains $ variable
+      const isReactive = variableRegEx.test(val)
+      if (isReactive === true) {
+        this.effectsCode.push(`
+          ${elm}.set('content', ${output})
+        `)
+      }
+    }
+  }
+
   if (options.holder === true) {
     renderCode.push(`
     skips[${counter}] = []
-    if(typeof cmps[${counter}] !== 'undefined') {
-      for(let key in cmps[${counter}][Symbol.for('config')].props) {
-        delete elementConfigs[${counter}][cmps[${counter}][Symbol.for('config')].props[key]]
-        skips[${counter}].push(cmps[${counter}][Symbol.for('config')].props[key])
+    if(typeof cmps[${counter}] !== 'undefined' && cmps[${counter}][Symbol.for('config')].props !== undefined) {
+      // attributes that are a prop should be removed from element config (even if it's a know element prop)
+      let props = cmps[${counter}][Symbol.for('config')].props
+      if(Array.isArray(props) === false) props = Object.keys(cmps[${counter}][Symbol.for('config')].props)
+      for(let k = 0; k < props.length; k++) {
+        const key = props[k]
+        if(validAttributes.indexOf(key) !== -1) continue
+        delete elementConfigs[${counter}][key]
+        skips[${counter}].push(key)
       }
     }
     `)
@@ -360,17 +402,17 @@ const generateComponentCode = function (
     }
   `)
 
-  // For forloops, this code runs per instance, setting metadata for each component instance
   if (isDev === true) {
-    const componentType = templateObject[Symbol.for('componentType')]
+    const templateTagName = templateObject[Symbol.for('componentType')]
     const holderElm = options.key
       ? `elms[${holderCounter}][${options.key}]`
       : `elms[${holderCounter}]`
+    const componentDisplayName = `typeof componentType === 'string'
+      ? componentType
+      : (componentType?.[Symbol.for('componentType')] || '${templateTagName}')`
     renderCode.push(`
       if (${holderElm} !== undefined && typeof ${holderElm}.setInspectorMetadata === 'function') {
-        ${holderElm}.setInspectorMetadata({
-          $componentType: '${componentType}'
-        })
+        ${holderElm}.setInspectorMetadata({ 'blits-componentType': ${componentDisplayName} })
       }
     `)
   }
@@ -503,10 +545,16 @@ const generateForLoopCode = function (templateObject, parent) {
 
       component !== null && component[Symbol.for('removeGlobalEffects')](effects[${forStartCounter}])
 
-      for(let i = 0; i < effects[${forStartCounter}].length; i++) {
-        const value = effects[${forStartCounter}][i]
-        const index = component[Symbol.for('effects')].indexOf(value)
-        if (index > -1) component[Symbol.for('effects')].splice(index, 1)
+     const effectsToRemove = new Set(effects[${forStartCounter}].slice(0))
+      if (effectsToRemove.size > 0) {
+        const componentEffects = component?.[Symbol.for('effects')] || []
+        let writeIndex = 0
+        for (let readIndex = 0; readIndex < componentEffects.length; readIndex++) {
+          if (!effectsToRemove.has(componentEffects[readIndex])) {
+            componentEffects[writeIndex++] = componentEffects[readIndex]
+          }
+        }
+        componentEffects.length = writeIndex
       }
 
       effects[${forStartCounter}].length = 0
@@ -561,9 +609,9 @@ const generateForLoopCode = function (templateObject, parent) {
   }
 
   // separate effects that only rely on variables in the itteration
-  const innerScopeEffects = ctx.effectsCode.filter(
-    (effect) => [...effect.matchAll(scopeRegex)].length === 0
-  )
+  const innerScopeEffects = ctx.effectsCode.filter((effect) => {
+    return [...effect.matchAll(scopeRegex)].length === 0
+  })
 
   // separate effects that (also) rely on variables in the outer scope
   const outerScopeEffects = ctx.effectsCode.filter(
@@ -781,12 +829,12 @@ const cast = (val = '', key = false, component = 'component.') => {
     castedValue = parseFloat(val)
     if (val.endsWith('%')) {
       const map = {
-        w: 'width',
-        width: 'width',
-        x: 'width',
-        h: 'height',
-        height: 'height',
-        y: 'height',
+        w: 'w',
+        width: 'w',
+        x: 'w',
+        h: 'h',
+        height: 'h',
+        y: 'h',
       }
       const base = map[key]
       if (base) {
@@ -804,8 +852,13 @@ const cast = (val = '', key = false, component = 'component.') => {
   }
   // @-listener
   else if (key.startsWith('@') && val) {
-    const c = component.slice(0, -1)
-    castedValue = `${c}['${val.replace('$', '')}'] && ${c}['${val.replace('$', '')}'].bind(${c})`
+    const trimmed = val.trim()
+    if (/^\$?\w+$/.test(trimmed)) {
+      const c = component.slice(0, -1)
+      castedValue = `${c}['${trimmed.replace('$', '')}'] && ${c}['${trimmed.replace('$', '')}'].bind(${c})`
+    } else {
+      castedValue = interpolate(trimmed, component)
+    }
   }
   // dynamic value
   else if (val.startsWith('$')) {
@@ -832,6 +885,65 @@ const cast = (val = '', key = false, component = 'component.') => {
   }
 
   return castedValue
+}
+
+function escapeSingleQuotes(str) {
+  return str.replace(/(\\*)'/g, (match, backslashes) => {
+    // If the number of backslashes is odd, quote is already escaped
+    if (backslashes.length % 2 === 1) {
+      return match
+    }
+    // Otherwise, escape the quote
+    return backslashes + "\\'"
+  })
+}
+
+const parseTagContent = (val = '', component = 'component.') => {
+  // unescaped single quotes must be escaped while preserving escaped backslashes
+  let escapedVal = escapeSingleQuotes(val)
+
+  const dynamicParts = /\{\{\s*.+?\s*\}\}/g
+  const matches = [...escapedVal.matchAll(dynamicParts)]
+
+  if (matches.length > 0) {
+    const isValStartsWithBrace = escapedVal.startsWith('{{')
+    const isValEndsWithBrace = escapedVal.endsWith('}}')
+    for (let matchObj of matches) {
+      const { 0: match, index } = matchObj
+      const isMatchAtStart = index === 0
+      const isMatchAtLast = val[index + match.length] === undefined ? true : false
+
+      let parsedMatch = match
+
+      const replaceDollar = /\$(\$(?=\$)|\$?)/g
+      const dollarMatches = [...parsedMatch.matchAll(replaceDollar)]
+      if (dollarMatches.length > 0) {
+        parsedMatch = parsedMatch.replace(replaceDollar, (match, group1) => {
+          if (group1 === '') {
+            return component
+          } else if (group1 === '$') {
+            return component + '$'
+          }
+        })
+      }
+
+      parsedMatch = parsedMatch.replace('{{', '(').replace('}}', ')')
+      if (isMatchAtStart === false) {
+        parsedMatch = `"+${parsedMatch}`
+      }
+      if (isMatchAtLast === false) {
+        parsedMatch = `${parsedMatch}+"`
+      }
+      escapedVal = escapedVal.replace(match, parsedMatch)
+    }
+    if (isValStartsWithBrace === false) {
+      escapedVal = '"' + escapedVal
+    }
+    if (isValEndsWithBrace === false) {
+      escapedVal = escapedVal + '"'
+    }
+  }
+  return escapedVal
 }
 
 const isReactiveKey = (str) => str.startsWith(':')

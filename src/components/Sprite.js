@@ -24,8 +24,12 @@ export default () =>
     template: `
       <Element w="100%" h="100%" :texture="$texture" :color="$color" effects="$effects" />
     `,
-    props: ['image', 'map', 'frame', 'color', 'effects'],
-
+    props: {
+      image: undefined,
+      map: undefined,
+      frame: undefined,
+      color: undefined,
+    },
     state() {
       return {
         spriteTexture: null,
@@ -88,8 +92,8 @@ export default () =>
             texture: this.spriteTexture,
             x: options.x,
             y: options.y,
-            width: options.w,
-            height: options.h,
+            w: options.w,
+            h: options.h,
           })
         }
 
