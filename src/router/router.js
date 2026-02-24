@@ -251,7 +251,7 @@ export const navigate = async function () {
   let reuse = false
   if (preventHashChangeNavigation === false && this[symbols.parent][symbols.routes]) {
     let previousRoute = currentRoute //? Object.assign({}, currentRoute) : undefined
-    let route = matchHash(getHash(document.location.hash), this[symbols.parent][symbols.routes])
+    let route = matchHash(getHash(location.hash), this[symbols.parent][symbols.routes])
 
     currentRoute = route
 
@@ -622,7 +622,7 @@ export const to = (location, data = {}, options = {}) => {
   navigationData = data
   overrideOptions = options
 
-  window.location.hash = location
+  location.hash = location
 }
 
 export const back = function () {

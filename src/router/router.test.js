@@ -769,7 +769,7 @@ test('Before hook route object redirect', async (assert) => {
 
   to('/original')
   await navigate.call(host)
-  assert.equal(window.location.hash, '#/redirected', 'Should redirect to new path')
+  assert.equal(location.hash, '#/redirected', 'Should redirect to new path')
   stage.element = originalElement
   assert.end()
 })
@@ -801,7 +801,7 @@ test('BeforeEach hook route object redirect', async (assert) => {
 
   to('/original')
   await navigate.call(host)
-  assert.equal(window.location.hash, '#/redirected', 'Should redirect via beforeEach hook')
+  assert.equal(location.hash, '#/redirected', 'Should redirect via beforeEach hook')
   stage.element = originalElement
   assert.end()
 })
