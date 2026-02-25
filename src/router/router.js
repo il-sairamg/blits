@@ -504,10 +504,6 @@ export const navigate = async function () {
         }
       }
 
-      // Clear module-level variables after removeView has consumed them
-      overrideOptions = {}
-      navigationData = {}
-
       // apply in transition
       if (route.transition.in) {
         if (Array.isArray(route.transition.in)) {
@@ -555,6 +551,12 @@ export const navigate = async function () {
       }
     }
   }
+
+  // Clear module-level variables after removeView has consumed them.
+  // Placed here so it executes for all navigation flows, not only when
+  // previousRoute exists and reuse is false.
+  overrideOptions = {}
+  navigationData = {}
 
   // reset navigating indicators
   navigatingBack = false
