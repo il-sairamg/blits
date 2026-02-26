@@ -16,9 +16,6 @@
  */
 
 import symbols from '../lib/symbols.js'
-import { state } from '../router/router.js'
-import Settings from '../settings.js'
-import { DEFAULT_HOLD_TIMEOUT_MS } from '../constants.js'
 import { Log } from '../lib/log.js'
 import { getAncestors } from './helpers.js'
 
@@ -69,13 +66,7 @@ export default {
       i++
     }
 
-    setHover(component, event)
-
-    // // and finally set focus to the leaf component
-    // setFocusTimeout = setTimeout(
-    //   () => setFocus(component, event),
-    //   this.hold === true ? Settings.get('holdTimeout', DEFAULT_HOLD_TIMEOUT_MS) : 0
-    // )
+    setHover(component)
   },
   clear() {
     if (hoveredComponent === null) return
@@ -90,11 +81,10 @@ export default {
 }
 
 /**
- * Set the focus to the Component
- * @param {Object} component  - The component fo focus
- * @param {MouseEvent} event - Mouse event
+ * Set the hover to the Component
+ * @param {Object} component  - The component to hover
  */
-const setHover = (component, event) => {
+const setHover = (component) => {
   Log.info(
     '\nHover chain:\n',
     hoverChain.map((c, index) => '\t'.repeat(index) + '↳ ' + c.componentId).join('\n')
@@ -102,12 +92,4 @@ const setHover = (component, event) => {
 
   hoveredComponent = component
   component.lifecycle.state = 'hover'
-
-  // ??
-  if (event instanceof KeyboardEvent) {
-    const internalEvent = new KeyboardEvent('keydown', event)
-    // @ts-ignore - this is an internal event
-    internalEvent[symbols.internalEvent] = true
-    document.dispatchEvent(internalEvent)
-  }
 }
