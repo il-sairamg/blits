@@ -94,6 +94,9 @@ export default {
           inspectorEnabled = Settings.get('inspector', false)
         }
       }
+      // update the built-in isHovered state variable
+      if (v === 'hover') this.component[symbols.state].isHovered = true
+      if (v === 'unhover') this.component[symbols.state].isHovered = false
       if (v === 'focus') {
         this.component[symbols.state].hasFocus = true
         if (
@@ -114,9 +117,6 @@ export default {
           this.component[symbols.holder].setInspectorMetadata({ 'blits-hasFocus': false })
         }
       }
-      // update the built-in isHovered state variable
-      if (v === 'hover') this.component[symbols.state].isHovered = true
-      if (v === 'unhover') this.component[symbols.state].isHovered = false
     }
   },
 }

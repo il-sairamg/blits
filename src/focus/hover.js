@@ -30,6 +30,9 @@ export default {
     return hoveredComponent
   },
   set(component) {
+    // early return if component is undefined
+    if (component === undefined) return
+
     // early return if already hovered
     if (component === hoveredComponent) return
 
@@ -47,7 +50,10 @@ export default {
         while (i--) {
           // don't unhover when part of the new hover chain
           if (newhoverChain.indexOf(hoverChain[i]) > -1) break
-          hoverChain[i].lifecycle.state = 'unhover'
+          // skip if component is destroyed
+          if (hoverChain[i].eol !== true) {
+            hoverChain[i].lifecycle.state = 'unhover'
+          }
         }
         hoverChain = newhoverChain
       }
@@ -56,7 +62,10 @@ export default {
     // ensure that all components in the hover path have hover state
     let i = 0
     while (i < hoverChain.length - 1) {
-      hoverChain[i].lifecycle.state = 'hover'
+      // skip if component is destroyed
+      if (hoverChain[i].eol !== true) {
+        hoverChain[i].lifecycle.state = 'hover'
+      }
       i++
     }
 
@@ -67,6 +76,16 @@ export default {
     //   () => setFocus(component, event),
     //   this.hold === true ? Settings.get('holdTimeout', DEFAULT_HOLD_TIMEOUT_MS) : 0
     // )
+  },
+  clear() {
+    if (hoveredComponent === null) return
+    for (let i = 0; i < hoverChain.length; i++) {
+      if (hoverChain[i].eol !== true) {
+        hoverChain[i].lifecycle.state = 'unhover'
+      }
+    }
+    hoveredComponent = null
+    hoverChain = []
   },
 }
 

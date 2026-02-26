@@ -1260,6 +1260,16 @@ declare module '@lightningjs/blits' {
      */
     announcerOptions?: AnnouncerUtteranceOptions,
     /**
+     * Enable mouse support (hover and click-to-focus).
+     *
+     * When set to `true`, pointer movement over the canvas updates hover state on components
+     * and click dispatches focus and Enter key input to the component under the cursor.
+     * When set to `false`, no mouse or pointer listeners are registered.
+     *
+     * @default false
+     */
+    enableMouse?: boolean,
+    /**
      * Maximum FPS at which the App will be rendered
      *
      * Lowering the maximum FPS value can improve the overall experience on lower end devices.

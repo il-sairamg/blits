@@ -219,7 +219,9 @@ const Component = (name = required('name'), config = required('config')) => {
     // such as rotation and scale to components)
     this[symbols.holder] = parentEl
 
-    if (parentEl !== undefined) componentMap.set(parentEl.node, this)
+    if (parentEl !== undefined && parentEl.node !== undefined) {
+      componentMap.set(parentEl.node, this)
+    }
 
     // generate an internal id (simple counter)
     this[symbols.id] = createInternalId()
