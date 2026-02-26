@@ -104,7 +104,7 @@ const Application = (config) => {
       }
 
       Focus.input(key, e)
-      if (mouseEnabled) Hover.clear()
+      if (mouseEnabled === true) Hover.clear()
       clearTimeout(holdTimeout)
       holdTimeout = setTimeout(
         () => {
@@ -130,7 +130,7 @@ const Application = (config) => {
     let canvasRect = null
 
     updateCanvasRect = () => {
-      if (renderer.canvas) {
+      if (renderer.canvas !== undefined) {
         canvasRect = renderer.canvas.getBoundingClientRect()
       }
     }
@@ -191,7 +191,7 @@ const Application = (config) => {
 
     document.addEventListener('keydown', keyDownHandler)
     document.addEventListener('keyup', keyUpHandler)
-    if (mouseEnabled) {
+    if (mouseEnabled === true) {
       updateCanvasRect()
       document.addEventListener('mousemove', mouseMoveHandler)
       document.addEventListener('click', mouseClickHandler)

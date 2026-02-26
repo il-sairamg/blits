@@ -50,8 +50,8 @@ export default {
         while (i--) {
           // don't unhover when part of the new hover chain
           if (newhoverChain.indexOf(hoverChain[i]) > -1) break
-          // skip if component is destroyed (lifecycle.state becomes undefined)
-          if (hoverChain[i].lifecycle.state !== undefined) {
+          // skip if component is destroyed
+          if (hoverChain[i].eol !== true) {
             hoverChain[i].lifecycle.state = 'unhover'
           }
         }
@@ -62,8 +62,8 @@ export default {
     // ensure that all components in the hover path have hover state
     let i = 0
     while (i < hoverChain.length - 1) {
-      // skip if component is destroyed (lifecycle.state becomes undefined)
-      if (hoverChain[i].lifecycle.state !== undefined) {
+      // skip if component is destroyed
+      if (hoverChain[i].eol !== true) {
         hoverChain[i].lifecycle.state = 'hover'
       }
       i++
@@ -80,7 +80,7 @@ export default {
   clear() {
     if (hoveredComponent === null) return
     for (let i = 0; i < hoverChain.length; i++) {
-      if (hoverChain[i].lifecycle?.state !== undefined) {
+      if (hoverChain[i].eol !== true) {
         hoverChain[i].lifecycle.state = 'unhover'
       }
     }
