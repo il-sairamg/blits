@@ -100,7 +100,7 @@ export default (App, target, settings = {}) => {
         textureMemory: textureMemorySettings(settings),
         createImageBitmapSupport: 'auto',
         targetFPS: 'maxFPS' in settings ? settings.maxFPS : 0,
-        platform: settings.platform,
+        platform: 'platform' in settings ? settings.platform : null,
       },
       ...(settings.advanced || {}),
     },
