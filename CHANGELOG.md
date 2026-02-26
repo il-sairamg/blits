@@ -1,5 +1,72 @@
 # Changelog
 
+
+## v1.49.0
+
+_20 feb 2026_
+
+- Added `data-blits-renderstate` inspector attribute
+- Fixed `data-blits-hasfocus` inspector attribute to always be available
+- Added boolean attribute to `idle` lifecycle hook to indicate `idle` or `active` state
+- Fixed type definitions for
+- Fixed double processiong of reactivity guard
+
+## v1.48.0
+
+_10 feb 2026_
+
+- Improved cleanup of for-loop effects
+- Fixed router issue with params not being reset
+- Added next tick debouncing for transitions on multiple props
+- Bumped renderer to 2.21.0
+- Added support for using function-notation in `@loaded`, `@error` and `@updated` callbacks
+- Added displaying of correct component type in inspector data when using `is`-attribute
+- Replaced `$`-prefix for automatic inspector data with `blits-` prefix (fixes fatal error in Safari)
+
+
+## v1.47.0
+
+_26 jan 2026_
+
+- Fixed issue with reactivity guard vite plugin failing for commented-out code
+- Fixed issue with autosizing of holder node by adding extra `eol` check
+- Added support for _variants_ to the Theme plugin
+
+## v1.46.0
+
+_22 jan 2026_
+
+- Improved Announcer on Comcast devices
+- Added new `afterEach` router hook
+- Added router option to dynamically disable `back`-key handling by the router
+- Added `this.$debounce`-method
+- Added automatic inspector data items (`$componentType`, `$hasFocus` and `$isTransitioning`)
+- Added functionality to auto size the holder node of a Component when the wrapper Element has dimensions
+- Bumped Lightning renderer to v2.20.4 with correct handling of failed textures
+
+## v1.45.2
+
+_13 jan 2026_
+
+- Updated renderer to v2.20.2
+
+## v1.45.1
+
+_29 dec 2025_
+
+- fixed issue `magic-string` package being a dev dependency
+
+## v1.45.0
+
+_29 dec 2025_
+
+- Added support for defining types for custom plugins on the Blits component definitions
+- Added importable type definitions for built-in plugins
+- Added support for JS sourcemaps
+- Added reactivity for shader props (individual shaders, not effects via dynamic shader)
+- Fixed issue with usage of Blits plugins not working in for loops
+- Improved test coverage
+
 ## v1.44.0
 
 _20 Nov 2025_

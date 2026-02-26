@@ -15,33 +15,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import symbols from '../../lib/symbols.js'
-import { to, currentRoute, back, state } from '../../router/router.js'
-
-export default {
-  $router: {
-    value: {
-      to,
-      back,
-      get backNavigation() {
-        return state.backNavigation !== false
-      },
-      set backNavigation(enabled) {
-        state.backNavigation = enabled !== false
-      },
-      get currentRoute() {
-        return currentRoute
-      },
-      get routes() {
-        return this[symbols.routes]
-      },
-      get navigating() {
-        return state.navigating
-      },
-      state,
-    },
-    writable: false,
-    enumerable: true,
-    configurable: false,
-  },
+export interface LanguagePlugin {
+  translate(key: string, ...replacements: any[]): string
+  readonly language: string
+  set(language: string): void
+  translations(translationsObject: Record<string, unknown>): void
+  load(file: string): Promise<void>
 }
+
+export interface LanguagePluginOptions {
+  file?: string
+  language?: string
+}
+
+declare const language: {
+  readonly name: 'language'
+  plugin: (options?: LanguagePluginOptions) => LanguagePlugin
+}
+
+export default language
+

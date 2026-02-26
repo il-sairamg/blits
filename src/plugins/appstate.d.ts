@@ -15,33 +15,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import symbols from '../../lib/symbols.js'
-import { to, currentRoute, back, state } from '../../router/router.js'
+export type AppStatePlugin<TState extends Record<string, unknown> = Record<string, unknown>> = TState
 
-export default {
-  $router: {
-    value: {
-      to,
-      back,
-      get backNavigation() {
-        return state.backNavigation !== false
-      },
-      set backNavigation(enabled) {
-        state.backNavigation = enabled !== false
-      },
-      get currentRoute() {
-        return currentRoute
-      },
-      get routes() {
-        return this[symbols.routes]
-      },
-      get navigating() {
-        return state.navigating
-      },
-      state,
-    },
-    writable: false,
-    enumerable: true,
-    configurable: false,
-  },
+declare const appState: {
+  readonly name: 'appState'
+  plugin: <TState extends Record<string, unknown>>(state?: TState) => AppStatePlugin<TState>
 }
+
+export default appState
+

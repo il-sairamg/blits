@@ -243,15 +243,29 @@ const propsTransformer = {
   },
   set w(v) {
     this.props['width'] = parsePercentage.call(this, v, 'width')
+    if (
+      this.___wrapper === true &&
+      this.element.component.eol !== true &&
+      this.element.component[symbols.holder] !== undefined
+    ) {
+      this.element.component[symbols.holder].set('w', this.props['width'])
+    }
   },
   set width(v) {
-    this.props['width'] = parsePercentage.call(this, v, 'width')
+    this.w = v
   },
   set h(v) {
     this.props['height'] = parsePercentage.call(this, v, 'height')
+    if (
+      this.___wrapper === true &&
+      this.element.component.eol !== true &&
+      this.element.component[symbols.holder] !== undefined
+    ) {
+      this.element.component[symbols.holder].set('h', this.props['height'])
+    }
   },
   set height(v) {
-    this.props['height'] = parsePercentage.call(this, v, 'height')
+    this.h = v
   },
   set x(v) {
     this.props['x'] = parsePercentage.call(this, v, 'width')
@@ -565,6 +579,39 @@ const Element = {
     }
   },
   /**
+   * Sets framework-provided inspector metadata
+   * Only sets if inspector is enabled and in dev mode
+   * @param {Object} data - Framework inspector metadata to merge
+   */
+  setInspectorMetadata(data) {
+    // Early return if inspector not enabled (performance optimization)
+    if (inspectorEnabled !== true) {
+      return
+    }
+
+    // Early return if element is destroyed (props.props is null)
+    if (this.props.props === undefined || this.props.props === null) {
+      return
+    }
+
+    // Initialize data object if it doesn't exist
+    if (this.props['data'] === undefined) {
+      this.props['data'] = {}
+    }
+    if (this.props.props['data'] === undefined) {
+      this.props.props['data'] = {}
+    }
+
+    // Merge framework data (blits-* keys data attributes)
+    Object.assign(this.props['data'], data)
+    Object.assign(this.props.props['data'], data)
+
+    // Sync to renderer node so inspector can see it
+    if (this.node !== undefined && this.node !== null) {
+      this.node.data = { ...this.props.props['data'] }
+    }
+  },
+  /**
    * Set an individual property on the node
    *
    * @this {import('../../component').BlitsElement} this
@@ -609,13 +656,31 @@ const Element = {
     }
   },
   animate(prop, value, transition) {
+    // Clear any existing debounce timeout for this property
+    if (this.debounceTimeouts[prop] !== undefined) {
+      clearTimeout(this.debounceTimeouts[prop])
+      Log.debug(`Cleared debounce timeout for property "${prop}"`)
+    }
+
+    // Debounce the animation execution
+    this.debounceTimeouts[prop] = setTimeout(() => {
+      delete this.debounceTimeouts[prop]
+      this._executeAnimation(prop, value, transition)
+    }, 0)
+  },
+  _executeAnimation(prop, value, transition) {
     // check if a transition is already scheduled to run on the same prop
     // and cancels it if it does
+    const stateOfAnimation =
+      this.scheduledTransitions[prop] !== undefined
+        ? this.scheduledTransitions[prop].f.state
+        : undefined
+
     if (
-      this.scheduledTransitions[prop] !== undefined &&
-      this.scheduledTransitions[prop].f.state === 'scheduled'
+      stateOfAnimation !== undefined &&
+      (stateOfAnimation === 'scheduled' || stateOfAnimation === 'running')
     ) {
-      this.scheduledTransitions[prop].f.stop()
+      this.scheduledTransitions[prop].f.stop(stateOfAnimation === 'running' ? false : true)
     }
 
     // if current value is the same as the value to animate to, instantly resolve
@@ -649,6 +714,11 @@ const Element = {
     this.scheduledTransitions[prop] = {
       v: props[prop],
       f,
+    }
+
+    // Update inspector metadata when transition starts
+    if (inspectorEnabled === true) {
+      this.setInspectorMetadata({ 'blits-isTransitioning': true })
     }
 
     if (transition.start !== undefined && typeof transition.start === 'function') {
@@ -685,6 +755,12 @@ const Element = {
       }
       // remove the prop from scheduled transitions
       delete this.scheduledTransitions[prop]
+      // Update inspector metadata when transition ends
+      if (inspectorEnabled === true) {
+        this.setInspectorMetadata({
+          'blits-isTransitioning': Object.keys(this.scheduledTransitions).length > 0,
+        })
+      }
     })
 
     // start animation
@@ -694,6 +770,14 @@ const Element = {
     if (this.node === null) return
 
     Log.debug('Deleting Node', this.nodeId)
+
+    // Clear all pending debounce timeouts
+    const debounceProps = Object.keys(this.debounceTimeouts)
+    for (let i = 0; i < debounceProps.length; i++) {
+      clearTimeout(this.debounceTimeouts[debounceProps[i]])
+    }
+    this.debounceTimeouts = null
+
     // Clearing transition end callback functions
     const transitionProps = Object.keys(this.scheduledTransitions)
     for (let i = 0; i < transitionProps.length; i++) {
@@ -776,6 +860,7 @@ export default (config, component) => {
   return Object.assign(Object.create(Element), {
     props: Object.assign(Object.create(propsTransformer), { props: {} }),
     scheduledTransitions: {},
+    debounceTimeouts: {},
     config,
     component,
   })

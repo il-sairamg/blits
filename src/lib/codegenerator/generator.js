@@ -151,6 +151,10 @@ const generateElementCode = function (
 
   renderCode.push(`elementConfigs[${counter}] = {}`)
 
+  if (counter === 0) {
+    renderCode.push(`elementConfigs[${counter}]['___wrapper'] = true `)
+  }
+
   if (options.forloop) {
     renderCode.push(`if(${elm} === undefined) {`)
   }
@@ -283,9 +287,11 @@ const generateComponentCode = function (
 
   const children = templateObject.children
   delete templateObject.children
+  // Capture holder counter before generating element code (which may process children and increment counter)
+  const holderCounter = counter
   generateElementCode.call(this, templateObject, parent, { ...options, ...{ holder: true } })
 
-  parent = options.key ? `elms[${counter}][${options.key}]` : `elms[${counter}]`
+  parent = options.key ? `elms[${holderCounter}][${options.key}]` : `elms[${holderCounter}]`
 
   counter++
 
@@ -353,6 +359,21 @@ const generateComponentCode = function (
       parent = ${elm}[Symbol.for('children')][0]
     }
   `)
+
+  if (isDev === true) {
+    const templateTagName = templateObject[Symbol.for('componentType')]
+    const holderElm = options.key
+      ? `elms[${holderCounter}][${options.key}]`
+      : `elms[${holderCounter}]`
+    const componentDisplayName = `typeof componentType === 'string'
+      ? componentType
+      : (componentType?.[Symbol.for('componentType')] || '${templateTagName}')`
+    renderCode.push(`
+      if (${holderElm} !== undefined && typeof ${holderElm}.setInspectorMetadata === 'function') {
+        ${holderElm}.setInspectorMetadata({ 'blits-componentType': ${componentDisplayName} })
+      }
+    `)
+  }
 
   this.cleanupCode.push(`components[${counter}] = null`)
 
@@ -482,10 +503,16 @@ const generateForLoopCode = function (templateObject, parent) {
 
       component !== null && component[Symbol.for('removeGlobalEffects')](effects[${forStartCounter}])
 
-      for(let i = 0; i < effects[${forStartCounter}].length; i++) {
-        const value = effects[${forStartCounter}][i]
-        const index = component[Symbol.for('effects')].indexOf(value)
-        if (index > -1) component[Symbol.for('effects')].splice(index, 1)
+     const effectsToRemove = new Set(effects[${forStartCounter}].slice(0))
+      if (effectsToRemove.size > 0) {
+        const componentEffects = component?.[Symbol.for('effects')] || []
+        let writeIndex = 0
+        for (let readIndex = 0; readIndex < componentEffects.length; readIndex++) {
+          if (!effectsToRemove.has(componentEffects[readIndex])) {
+            componentEffects[writeIndex++] = componentEffects[readIndex]
+          }
+        }
+        componentEffects.length = writeIndex
       }
 
       effects[${forStartCounter}].length = 0
@@ -783,8 +810,13 @@ const cast = (val = '', key = false, component = 'component.') => {
   }
   // @-listener
   else if (key.startsWith('@') && val) {
-    const c = component.slice(0, -1)
-    castedValue = `${c}['${val.replace('$', '')}'] && ${c}['${val.replace('$', '')}'].bind(${c})`
+    const trimmed = val.trim()
+    if (/^\$?\w+$/.test(trimmed)) {
+      const c = component.slice(0, -1)
+      castedValue = `${c}['${trimmed.replace('$', '')}'] && ${c}['${trimmed.replace('$', '')}'].bind(${c})`
+    } else {
+      castedValue = interpolate(trimmed, component)
+    }
   }
   // dynamic value
   else if (val.startsWith('$')) {

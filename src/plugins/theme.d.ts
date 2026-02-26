@@ -15,33 +15,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import symbols from '../../lib/symbols.js'
-import { to, currentRoute, back, state } from '../../router/router.js'
-
-export default {
-  $router: {
-    value: {
-      to,
-      back,
-      get backNavigation() {
-        return state.backNavigation !== false
-      },
-      set backNavigation(enabled) {
-        state.backNavigation = enabled !== false
-      },
-      get currentRoute() {
-        return currentRoute
-      },
-      get routes() {
-        return this[symbols.routes]
-      },
-      get navigating() {
-        return state.navigating
-      },
-      state,
-    },
-    writable: false,
-    enumerable: true,
-    configurable: false,
-  },
+export interface ThemePlugin {
+  get<T = unknown>(key: string): T | undefined
+  get<T>(key: string, fallback: T): T
+  /**
+   * @deprecated
+   * Deprecated:  use `$theme.current()` instead
+   */
+  set(theme: string): void
+  current(theme: string): void
+  variant(theme: string): void
 }
+
+export interface ThemePluginConfig {
+  themes?: Record<string, Record<string, unknown>>
+  current?: string
+  base?: string
+  variant?: string
+}
+
+declare const theme: {
+  readonly name: 'theme'
+  plugin: (config?: ThemePluginConfig | Record<string, unknown>) => ThemePlugin
+}
+
+export default theme
+
