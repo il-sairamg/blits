@@ -15,7 +15,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import symbols from '../lib/symbols.js'
 import { Log } from '../lib/log.js'
 import { getAncestors } from './helpers.js'
 
