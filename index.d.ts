@@ -1229,7 +1229,14 @@ declare module '@lightningjs/blits' {
      *
      * Defaults to `0` which means no maximum
      */
-    maxFPS?: number
+    maxFPS?: number,
+    /**
+     * Custom platform layer to be used by the App (experimental)
+     *
+     * Defaults to `null` which will be resolved internally to WebPlatform
+     */
+    platform?: any
+
   }
 
   interface State {
