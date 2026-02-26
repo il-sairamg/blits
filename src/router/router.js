@@ -21,7 +21,7 @@ import { reactive } from '../lib/reactivity/reactive.js'
 import symbols from '../lib/symbols.js'
 import { Log } from '../lib/log.js'
 import { stage } from '../launch.js'
-import Focus from '../focus.js'
+import Focus from '../focus/focus.js'
 import Announcer from '../announcer/announcer.js'
 import Settings from '../settings.js'
 
