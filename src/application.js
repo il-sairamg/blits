@@ -160,22 +160,25 @@ const Application = (config) => {
 
       const node = stage.getNodeFromPosition({ x, y })
 
-      if (node === null) return
+      if (node === null) {
+        currentComponent = undefined
+        Hover.clear()
+        return
+      }
       if (node === currentNode) return
 
       currentNode = node
-
       currentComponent = componentMap.get(currentNode)
 
       if (currentComponent === undefined) {
+        Hover.clear()
         return
       }
-
       Hover.set(currentComponent)
     }
 
     mouseClickHandler = () => {
-      if (currentComponent === undefined) return
+      if (currentComponent === undefined || currentComponent.eol === true) return
 
       const e = new KeyboardEvent('keydown', {
         key: 'Enter',
