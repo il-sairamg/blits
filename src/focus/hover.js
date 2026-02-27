@@ -26,8 +26,7 @@ export default {
     return hoveredComponent
   },
   set(component) {
-    // early return if component is undefined
-    if (component === undefined) return
+    if (component === undefined || component.eol === true) return
 
     // early return if already hovered
     if (component === hoveredComponent) return
